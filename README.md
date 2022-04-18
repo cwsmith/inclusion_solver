@@ -1,6 +1,6 @@
 ## Summary
 
-This application (based on MFEM's Volta miniapp), solves the electrostatic problem for a substrate that includes an array of ellipsoidal inclusions with a different permittivity. The boundary conditions for this problem are consistent with a uniform background Electric field in the z direction of the coordinate axes.
+This application (based on MFEM's Volta miniapp https://mfem.org/electromagnetics/), solves the electrostatic problem for a substrate that includes an array of ellipsoidal inclusions with a different permittivity. The boundary conditions for this problem are consistent with a uniform background Electric field in the z direction of the coordinate axes.
 
 ## Build Instructions
 
@@ -15,6 +15,44 @@ If things run successfully there should be an executable named `inclusion` in yo
 **Note** for SCOREC users. All the necessary modules to build this example can be loaded by calling `source ../env-setup-scorec.sh`, and `scorec_config.sh` config file is customized for SCOREC.
 
 **Note** both the build for this example and the build of MFEM have to use consistent dependencies (e.g. the same Hypre, Metis, etc) to avoid build problems.
+
+### Example environment and config for build with CUDA enabled in MFEM and Omega\_h
+
+environment (SCOREC RHEL7)
+
+```
+module use /opt/scorec/spack/v0132/lmod/linux-rhel7-x86_64/Core
+module load gcc mpich cmake hypre parmetis cuda/10.2 
+
+pmetis=${PARMETIS_ROOT}
+export CMAKE_PREFIX_PATH=$CMAKE_PREFIX_PATH:$pmetis
+
+export HYPRE_DIR=$HYPRE_ROOT
+unset HYPRE_ROOT
+export METIS_DIR=$METIS_ROOT
+unset METIS_ROOT
+export ZLIB_DIR=$ZLIB_ROOT
+unset ZLIB_ROOT 
+
+export MPICH_CXX=g++
+export CMAKE_PREFIX_PATH=$CMAKE_PREFIX_PATH:/path/to/omegah/install
+```
+
+config.sh
+
+```
+export MFEM_INSTALL_PATH=/path/to/mfem/install/
+flags="-g -O0"
+cmake $1 \
+  -DCMAKE_BUILD_TYPE=Debug \
+  -DMFEM_PREFIX=$MFEM_INSTALL_PATH \
+  -DCMAKE_VERBOSE_MAKEFILE:BOOL=OFF \
+  -DCMAKE_INSTALL_PREFIX:PATH=$PWD/install \
+  -DCMAKE_CXX_COMPILER=mpicxx \
+  -DCMAKE_CXX_FLAGS="${flags}" \
+  -DCMAKE_EXE_LINKER_FLAGS="-lpthread ${flags}" \
+  -DINCLUSION_SOLVER_CUDA_ARCH=75
+```
 
 ## Example Meshes
 
